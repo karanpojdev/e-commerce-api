@@ -1,5 +1,7 @@
 package com.example.e_commerce_api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -23,4 +25,9 @@ public class User {
     // Role will be used for authorization (e.g., "USER", "ADMIN")
     @Enumerated(EnumType.STRING)
     private Role role = Role.USER; 
+
+    // mappedBy points to the 'user' field in the Cart entity
+    @JsonIgnore
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Cart cart;
 }

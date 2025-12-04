@@ -19,7 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // Use a custom bean to inject the JwtAuthenticationFilter
+    // Inject the filter as a bean so it can be managed by Spring (and Autowired)
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter();
@@ -35,7 +35,6 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
     
-    // The main security configuration method
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -46,12 +45,13 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll() // Anyone can view products
 
-                // Admin-Only Routes - Requires ADMIN role (we need to configure roles later, but this is the structure)
-                .requestMatchers(HttpMethod.POST, "/api/products").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN")
+                // Admin-Only Routes - Requires ADMIN role
+                .requestMatchers(HttpMethod.POST, "/api/products").hasAuthority("ADMIN") // <<< MUST BE "ADMIN"
+                .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAuthority("ADMIN")
 
                 // Authenticated User Routes (USER or ADMIN)
+                .requestMatchers("/api/cart/**").authenticated() // NEW: Protect cart endpoints
                 .anyRequest().authenticated() // All other requests require a logged-in user
             );
         

@@ -2,6 +2,7 @@ package com.example.e_commerce_api.security;
 
 import com.example.e_commerce_api.service.CustomUserDetailsService;
 import com.example.e_commerce_api.service.JwtService;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,18 +25,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String token = getJwtFromRequest(request);
+        try {
+            String token = getJwtFromRequest(request);
 
-        if (StringUtils.hasText(token) && jwtService.validateToken(token)) {
-            String username = jwtService.getUsernameFromJWT(token);
+            // 1. Check if token exists AND is valid (using JwtService)
+            if (StringUtils.hasText(token) && jwtService.validateToken(token)) { 
+                
+                // Get the username (subject) from the token payload
+                String username = jwtService.getUsernameFromToken(token); 
+                
+                // 2. Load the UserDetails object using the username
+                // This step is crucial because it loads the user's details AND the CORRECT authority from the database.
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username); 
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities());
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                if (userDetails != null) {
+                    // 3. Create Authentication token using UserDetails (which contains the correct authorities)
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails, 
+                            null, // credentials null since token is validated
+                            userDetails.getAuthorities() // Authorities loaded from UserDetails
+                    );
 
-            // Authenticate the user for the current request
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                    // 4. Set the authentication in the security context
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            }
+        } catch (Exception ex) {
+            // Log the exception, but continue the filter chain
+            logger.error("Could not set user authentication in security context", ex);
         }
 
         filterChain.doFilter(request, response);
