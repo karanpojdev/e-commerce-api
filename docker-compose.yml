@@ -10,5 +10,27 @@ services:
       - "5432:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ecommerce_user -d ecommerce_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  app:
+    build: . # Tells Docker to use the Dockerfile in the current directory
+    container_name: e_commerce_app
+    ports:
+      - "8080:8080" # Map container port 8080 to host port 8080
+    environment:
+      # Override application.properties to connect to the 'db' service
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/ecommerce_db
+      SPRING_DATASOURCE_USERNAME: ecommerce_user
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_PROFILES_ACTIVE: prod
+      # Ensure your JWT secret is also set here if not in the JAR
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always # Always restart if the container stops unexpectedly
 volumes:
   db-data:
