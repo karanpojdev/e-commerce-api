@@ -23,6 +23,7 @@ public class CartItem {
 
     // A CartItem holds one Product (ManyToOne)
     // Assuming you already have a Product entity defined.
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;

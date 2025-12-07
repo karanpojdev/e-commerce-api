@@ -3,6 +3,9 @@ package com.example.e_commerce_api.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Data
@@ -15,7 +18,7 @@ public class Product {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @Lob // Used for large strings like descriptions
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(nullable = false, precision = 10, scale = 2)
@@ -26,4 +29,13 @@ public class Product {
     
     // Field to track if a product is active/visible
     private boolean available = true;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CartItem> cartItems; 
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> orderItems;
+    
 }
