@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -15,35 +16,31 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-    // 1. ADMIN - Create Product
-    // POST http://localhost:8080/api/products
-    @PostMapping
-    // We'll secure this later so only ADMINs can access it
+    // 1. CREATE Product - ADMIN ONLY
+    @PostMapping 
+    // SecurityConfig restricts this to ADMIN
     public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-        Product createdProduct = productService.createProduct(product);
-        return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
+        Product newProduct = productService.saveProduct(product);
+        return new ResponseEntity<>(newProduct, HttpStatus.CREATED);
     }
 
-    // 2. USER/ALL - Get All Products
-    // GET http://localhost:8080/api/products
+    // 2. READ All Products - PUBLIC ACCESS
     @GetMapping
-    public List<Product> getAllProducts() {
-        return productService.getAllAvailableProducts();
+    public ResponseEntity<List<Product>> getAllProducts() {
+        return ResponseEntity.ok(productService.findAllProducts());
     }
 
-    // 3. USER/ALL - Get Product by ID
-    // GET http://localhost:8080/api/products/{id}
+    // 3. READ Single Product - PUBLIC ACCESS
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {
-        return productService.getProductById(id)
-            .map(ResponseEntity::ok)
-            .orElseGet(() -> ResponseEntity.notFound().build());
+        return productService.findProductById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    // 4. ADMIN - Update Product
-    // PUT http://localhost:8080/api/products/{id}
+    // 4. UPDATE Product - ADMIN ONLY
     @PutMapping("/{id}")
-    // We'll secure this later so only ADMINs can access it
+    // SecurityConfig restricts this to ADMIN
     public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product productDetails) {
         try {
             Product updatedProduct = productService.updateProduct(id, productDetails);
@@ -53,12 +50,11 @@ public class ProductController {
         }
     }
 
-    // 5. ADMIN - Delete Product
-    // DELETE http://localhost:8080/api/products/{id}
+    // 5. DELETE Product - ADMIN ONLY
     @DeleteMapping("/{id}")
-    // We'll secure this later so only ADMINs can access it
-    public ResponseEntity<HttpStatus> deleteProduct(@PathVariable Long id) {
+    // SecurityConfig restricts this to ADMIN
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 }

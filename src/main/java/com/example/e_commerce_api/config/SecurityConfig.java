@@ -41,17 +41,22 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for stateless REST API
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Use JWT (stateless)
             .authorizeHttpRequests(authorize -> authorize
+                
                 // Public Routes - Allow access without token
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/products").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll() // Anyone can view products
 
                 // Admin-Only Routes - Requires ADMIN role
-                .requestMatchers(HttpMethod.POST, "/api/products").hasAuthority("ADMIN") // <<< MUST BE "ADMIN"
+                .requestMatchers(HttpMethod.POST, "/api/products").hasAuthority("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAuthority("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAuthority("ADMIN")
 
                 // Authenticated User Routes (USER or ADMIN)
                 .requestMatchers("/api/cart/**").authenticated() // NEW: Protect cart endpoints
+                .requestMatchers("/api/cart/**", "/api/orders/**").authenticated()
+                
+                // All other requests require authentication by default
                 .anyRequest().authenticated() // All other requests require a logged-in user
             );
         

@@ -1,7 +1,6 @@
 package com.example.e_commerce_api.service;
 
 import com.example.e_commerce_api.model.*;
-import com.example.e_commerce_api.repository.OrderItemRepository;
 import com.example.e_commerce_api.repository.OrderRepository;
 import com.example.e_commerce_api.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
