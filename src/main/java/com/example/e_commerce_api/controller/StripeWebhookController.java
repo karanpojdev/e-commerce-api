@@ -31,7 +31,7 @@ public class StripeWebhookController {
                                                     @RequestHeader("Stripe-Signature") String sigHeader) {
         
         Event event;
-
+        System.out.println("$$$ DEBUG: REQUEST HIT CONTROLLER $$$");
         // 1. Validate the Webhook signature
         try {
             event = Webhook.constructEvent(payload, sigHeader, webhookSecret);

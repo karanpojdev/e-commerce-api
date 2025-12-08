@@ -36,7 +36,7 @@ public class SecurityConfig {
     
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
+        /*http
             .csrf(csrf -> csrf
                 .ignoringRequestMatchers("/api/webhooks/**") // Disable CSRF for webhooks
             )
@@ -65,6 +65,11 @@ public class SecurityConfig {
         // Add the JWT filter BEFORE the standard Spring Security filter
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
+        return http.build();*/
+        return http
+            .csrf(csrf -> csrf.disable()) // Disable CSRF
+            .cors(cors -> cors.disable()) // Disable CORS (if active)
+            .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll()) // Allow ALL traffic
+            .build();
     }
 }
