@@ -6,8 +6,7 @@ import com.stripe.param.PaymentIntentCreateParams;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import java.util.Map;
+import jakarta.annotation.PostConstruct;
 
 @Service
 public class PaymentService {
@@ -18,6 +17,8 @@ public class PaymentService {
     // Initialize Stripe client after construction
     @PostConstruct
     public void init() {
+        System.out.println("DEBUG: Loaded Stripe Secret Key (first 8 chars): " 
+                           + (secretKey != null ? secretKey.substring(0, 8) : "KEY IS NULL/MISSING"));          
         Stripe.apiKey = secretKey;
     }
 

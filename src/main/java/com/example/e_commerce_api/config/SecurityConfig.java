@@ -38,7 +38,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for stateless REST API
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers("/api/webhooks/**") // Disable CSRF for webhooks
+            )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Use JWT (stateless)
             .authorizeHttpRequests(authorize -> authorize
                 

@@ -1,5 +1,7 @@
 package com.example.e_commerce_api.controller;
 
+import com.example.e_commerce_api.dto.CheckoutResponse;
+import com.stripe.model.PaymentIntent;
 import com.example.e_commerce_api.model.Order;
 import com.example.e_commerce_api.security.CustomUserDetails;
 import com.example.e_commerce_api.service.OrderService;
@@ -29,17 +31,20 @@ public class OrderController {
      * POST /api/orders/place: Converts the cart into a permanent order.
      */
     @PostMapping("/place")
-    public ResponseEntity<Order> placeOrder(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<CheckoutResponse> placeOrder(@AuthenticationPrincipal CustomUserDetails userDetails) {
         Long userId = getUserId(userDetails);
         
         try {
-            Order newOrder = orderService.placeOrder(userId);
-            return new ResponseEntity<>(newOrder, HttpStatus.CREATED);
-        } catch (RuntimeException e) {
-            // Catches errors like "Cart is empty" or "Insufficient stock"
-            // You can enhance this to return specific error messages via a DTO
-            System.err.println("Order placement failed: " + e.getMessage());
-            return ResponseEntity.badRequest().body(null); 
+            PaymentIntent intent = orderService.placeOrder(userId);
+            CheckoutResponse response = new CheckoutResponse(
+                Long.parseLong(intent.getMetadata().get("order_id")), 
+                intent.getClientSecret()
+            );
+
+            return ResponseEntity.ok(response);
+        }catch (Exception e) {
+            // Handle exceptions (e.g., cart empty, stock shortage, Stripe API errors)
+            return new ResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
