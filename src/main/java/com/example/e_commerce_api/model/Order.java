@@ -41,6 +41,9 @@ public class Order {
     @Column(name = "status", nullable = false)
     private OrderStatus status;
 
+    @Column(name = "payment_intent_id")
+    private String paymentIntentId;
+
     // One Order contains multiple OrderItems (EAGER fetch is often needed for DTOs/JSON)
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<OrderItem> items = new ArrayList<>();

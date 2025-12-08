@@ -44,6 +44,7 @@ public class SecurityConfig {
                 
                 // Public Routes - Allow access without token
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/webhooks/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/products").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll() // Anyone can view products
 
